@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Math Quiz for Kids</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      text-align: center;
+      background-color: #f0f8ff;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    select, input, button {
+      padding: 10px;
+      margin: 10px 5px;
+      font-size: 16px;
+      width: calc(100% - 20px);
+      max-width: 100%;
+    }
+    .result-message {
+      font-weight: bold;
+      margin: 10px 0;
+      min-height: 24px;
+    }
+    .stats {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    #question {
+      font-size: 20px;
+      margin: 15px 0;
+    }
+    .solution {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Math Quiz for Kids</h2>
+
+    <label for="operation">Choose Operation:</label>
+    <select id="operation" onchange="resetAll()">
+      <option value="add">Addition</option>
+      <option value="sub">Subtraction</option>
+      <option value="mul">Multiplication</option>
+      <option value="div">Division</option>
+    </select>
+
+    <div id="question"></div>
+
+    <div id="inputs">
+      <input type="number" id="answer" placeholder="Answer" />
+    </div>
+
+    <div class="result-message" id="resultMsg"></div>
+    <div class="solution" id="solution"></div>
+
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="generateQuestion()">New Question</button>
+    <button onclick="clearMessage()">Clear Message</button>
+
+    <div class="stats">
+      <p>Total Questions: <span id="total">0</span></p>
+      <p>Correct: <span id="correct">0</span></p>
+      <p>Incorrect: <span id="incorrect">0</span></p>
+      <p>Accuracy: <span id="accuracy">0%</span></p>
+    </div>
+  </div>
+
+  <script>
+    let total = 0, correct = 0, incorrect = 0;
+    let currentAnswer = null;
+    let currentOperation = "add";
+    let currentQuestion = {};
+
+    function generateRandomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion() {
+      currentOperation = document.getElementById("operation").value;
+      let num1 = generateRandomNumber(100, 99999);
+      let num2 = generateRandomNumber(100, 99999);
+      let questionStr = "";
+
+      document.getElementById("inputs").innerHTML = "";
+      document.getElementById("resultMsg").textContent = "";
+      document.getElementById("solution").textContent = "";
+
+      if (currentOperation === "add") {
+        currentAnswer = num1 + num2;
+        questionStr = `${num1} + ${num2}`;
+        document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer">';
+      } else if (currentOperation === "sub") {
+        const a = Math.max(num1, num2);
+        const b = Math.min(num1, num2);
+        currentAnswer = a - b;
+        questionStr = `${a} - ${b}`;
+        document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer">';
+      } else if (currentOperation === "mul") {
+        currentAnswer = num1 * num2;
+        questionStr = `${num1} × ${num2}`;
+        document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer">';
+      } else if (currentOperation === "div") {
+        const divisor = generateRandomNumber(10, 99);
+        const quotient = generateRandomNumber(10, 999);
+        const dividend = divisor * quotient;
+        currentAnswer = quotient;
+        currentQuestion = { dividend, divisor, quotient };
+        questionStr = `${dividend} ÷ ${divisor}`;
+        document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer (Quotient only)" step="1">';
+      }
+
+      document.getElementById("question").textContent = questionStr;
+    }
+
+    function checkAnswer() {
+      const answerField = document.getElementById("answer");
+      const userInput = answerField.value.trim();
+
+      if (userInput === "") {
+        document.getElementById("resultMsg").textContent = "⚠️ Please enter an answer.";
+        document.getElementById("resultMsg").style.color = "orange";
+        return;
+      }
+
+      total++;
+      let isCorrect = false;
+
+      const userAnswer = parseInt(userInput);
+
+      if (userAnswer === currentAnswer) {
+        isCorrect = true;
+      }
+
+      if (isCorrect) {
+        correct++;
+        document.getElementById("resultMsg").textContent = "✅ Correct!";
+        document.getElementById("resultMsg").style.color = "green";
+        document.getElementById("solution").textContent = "";
+      } else {
+        incorrect++;
+        document.getElementById("resultMsg").textContent = "❌ Incorrect!";
+        document.getElementById("resultMsg").style.color = "red";
+        showSolution();
+      }
+
+      updateStats();
+    }
+
+    function showSolution() {
+      let solutionText = "";
+      if (currentOperation === "div") {
+        const { dividend, divisor, quotient } = currentQuestion;
+        const remainder = dividend % divisor;
+        solutionText = `Correct Answer: Quotient = ${quotient}, Remainder = ${remainder}`;
+      } else {
+        solutionText = `Correct Answer: ${currentAnswer}`;
+      }
+      document.getElementById("solution").textContent = solutionText;
+    }
+
+    function updateStats() {
+      document.getElementById("total").textContent = total;
+      document.getElementById("correct").textContent = correct;
+      document.getElementById("incorrect").textContent = incorrect;
+      const accuracy = total > 0 ? ((correct / total) * 100).toFixed(1) + '%' : '0%';
+      document.getElementById("accuracy").textContent = accuracy;
+    }
+
+    function clearMessage() {
+      document.getElementById("resultMsg").textContent = "";
+      document.getElementById("solution").textContent = "";
+    }
+
+    function resetAll() {
+      total = 0;
+      correct = 0;
+      incorrect = 0;
+      updateStats();
+      clearMessage();
+      generateQuestion();
+    }
+
+    window.onload = generateQuestion;
+  </script>
+</body>
+</html>
