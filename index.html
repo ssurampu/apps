@@ -28,7 +28,7 @@
     }
     .whiteboard-container {
       position: fixed;
-      top: 55%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       background-color: white;
@@ -69,7 +69,8 @@
 </head>
 <body>
   <div class="container">
-    <h2>Math Quiz for Kids</h2>
+    <!-- <h2>Math Quiz for Kids</h2> -->
+	<h1 id="quizTitle" onclick="editTitle()">Math Quiz for Kids</h1>
 
     <label for="operation">Choose Operation:</label>
     <select id="operation" onchange="resetAll()">
@@ -321,6 +322,46 @@
       clearMessage();
       generateQuestion();
     }
+	
+	function editTitle() {
+    const title = document.getElementById("quizTitle");
+    const currentName = title.textContent.replace("Math Quiz for ", "");
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 8;
+    input.placeholder = "Enter your name (max 8)";
+    input.style.fontSize = "12px";
+    input.style.padding = "4px";
+    input.style.width = "150px";
+    input.style.color = "#888"; // light grey hint color
+
+    input.value = (currentName !== "Kids") ? currentName : "";
+    if (input.value) input.style.color = "#000"; // black if user already had a name
+
+    // Replace title with input field
+    title.replaceWith(input);
+    input.focus();
+
+    // Change color to black on input
+    input.addEventListener("input", function () {
+      input.style.color = "#000";
+    });
+
+    function saveName() {
+      const newName = input.value.trim().substring(0, 8) || "Kids";
+      const newTitle = document.createElement("h1");
+      newTitle.id = "quizTitle";
+      newTitle.textContent = "Math Quiz for " + newName;
+      newTitle.onclick = editTitle;
+      input.replaceWith(newTitle);
+    }
+
+    input.addEventListener("blur", saveName);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") saveName();
+    });
+  }
 
     window.onload = generateQuestion;
   </script>
