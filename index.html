@@ -91,8 +91,8 @@
 
     function generateQuestion() {
       currentOperation = document.getElementById("operation").value;
-      let num1 = generateRandomNumber(100, 99999);
-      let num2 = generateRandomNumber(100, 99999);
+      let num1 = generateRandomNumber(100, 99999); // Ensure numbers are at least 3 digits
+      let num2 = generateRandomNumber(100, 99999); // Ensure numbers are at least 3 digits
       let questionStr = "";
 
       document.getElementById("inputs").innerHTML = "";
@@ -114,23 +114,35 @@
         questionStr = `${num1} × ${num2}`;
         document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer">';
       } else if (currentOperation === "div") {
-        const divisor = generateRandomNumber(10, 99);
-        const quotient = generateRandomNumber(10, 999);
-        const dividend = divisor * quotient;
-        currentAnswer = quotient;
-        currentQuestion = { dividend, divisor, quotient };
+        const divisor = generateRandomNumber(10, 99); // Divisor is between 10 and 99
+        const quotient = generateRandomNumber(100, 9999); // Quotient is between 1 and 99
+        const remainder = generateRandomNumber(0, divisor - 1); // Remainder is less than divisor
+        const dividend = divisor * quotient + remainder; // Generate the dividend with remainder
+        currentAnswer = { quotient, remainder }; // Store quotient and remainder as answer
+        currentQuestion = { dividend, divisor, quotient, remainder };
         questionStr = `${dividend} ÷ ${divisor}`;
-        document.getElementById("inputs").innerHTML = '<input type="number" id="answer" placeholder="Answer (Quotient only)" step="1">';
+        document.getElementById("inputs").innerHTML = `
+          <input type="number" id="quotient" placeholder="Quotient">
+          <input type="number" id="remainder" placeholder="Remainder">
+        `;
       }
 
       document.getElementById("question").textContent = questionStr;
     }
 
     function checkAnswer() {
+      const quotientField = document.getElementById("quotient");
+      const remainderField = document.getElementById("remainder");
       const answerField = document.getElementById("answer");
-      const userInput = answerField.value.trim();
+      const userAnswer = answerField ? parseInt(answerField.value.trim()) : null;
+      const userQuotient = quotientField ? parseInt(quotientField.value.trim()) : null;
+      const userRemainder = remainderField ? parseInt(remainderField.value.trim()) : null;
 
-      if (userInput === "") {
+      if (currentOperation === "div" && (isNaN(userQuotient) || isNaN(userRemainder))) {
+        document.getElementById("resultMsg").textContent = "⚠️ Please enter both quotient and remainder.";
+        document.getElementById("resultMsg").style.color = "orange";
+        return;
+      } else if (currentOperation !== "div" && isNaN(userAnswer)) {
         document.getElementById("resultMsg").textContent = "⚠️ Please enter an answer.";
         document.getElementById("resultMsg").style.color = "orange";
         return;
@@ -139,10 +151,15 @@
       total++;
       let isCorrect = false;
 
-      const userAnswer = parseInt(userInput);
-
-      if (userAnswer === currentAnswer) {
-        isCorrect = true;
+      if (currentOperation === "div") {
+        // Validate both quotient and remainder
+        if (userQuotient === currentAnswer.quotient && userRemainder === currentAnswer.remainder) {
+          isCorrect = true;
+        }
+      } else {
+        if (userAnswer === currentAnswer) {
+          isCorrect = true;
+        }
       }
 
       if (isCorrect) {
@@ -163,9 +180,7 @@
     function showSolution() {
       let solutionText = "";
       if (currentOperation === "div") {
-        const { dividend, divisor, quotient } = currentQuestion;
-        const remainder = dividend % divisor;
-        solutionText = `Correct Answer: Quotient = ${quotient}, Remainder = ${remainder}`;
+        solutionText = `Correct Answer: Quotient = ${currentAnswer.quotient}, Remainder = ${currentAnswer.remainder}`;
       } else {
         solutionText = `Correct Answer: ${currentAnswer}`;
       }
